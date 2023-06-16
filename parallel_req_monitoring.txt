@@ -1,0 +1,30 @@
+ 
+
+-- Мониторинг параллельных запросов от админов
+select  s.username,
+
+        s.osuser,
+
+        s.machine,
+
+        count(*)
+
+from    v$session s
+
+        inner join v$process p
+
+                on s.paddr = p.addr
+
+                        and p.pname like 'P0%'
+
+group   by s.username,
+
+        s.osuser,
+
+        s.machine
+
+order   by 4 desc;
+
+ 
+
+

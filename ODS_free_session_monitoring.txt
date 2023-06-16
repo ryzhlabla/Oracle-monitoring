@@ -1,0 +1,79 @@
+CREATE OR REPLACE PROCEDURE USERBOX_ODS_SESSIONS_BUSY
+ 
+is
+ 
+BEGIN
+ 
+ 
+DECLARE
+ 
+ 
+cnt_busy int;
+cnt int;
+ 
+BEGIN
+ 
+ 
+/*Кол-во сессий для USERBOX_RISK_MIS*/
+ 
+select /*s.USERNAME,*/
+80 - count(*) into cnt
+from v$session@ods s
+where s.USERNAME like '%USERBOX_RISK_MIS%'
+group by s.USERNAME;
+ 
+ 
+select /*s.USERNAME,*/
+count(*) into cnt_busy
+from v$session@ods s
+where s.USERNAME like '%USERBOX_RISK_MIS%'
+group by s.USERNAME;
+ 
+ 
+ 
+ 
+if cnt <= 5
+  
+  then
+ 
+send_email ('#RiskReporting@.ru','#RiskMIS@rencredit.ru',
+ 
+'Achtung! Свободные сессии на ODS заканчиваются',
+'Коллеги,
+</br>
+<h4><b> Свободные сессии на ODS заканчиваются:</b></h4>
+<table border="1" width="570">
+  <thead>
+    <tr>
+      <th  bgcolor="#800080">Всего</th>
+      <th  bgcolor="#800080">Занято</th>
+      <th  bgcolor="#800080">Осталось</th>
+    </tr>
+  </thead>
+  <tbody> 
+    <tr align="center"   bgcolor="#A9A9A9">  
+      <td>80</td>
+      <td>'||cnt_busy||'</td>
+      <td>'||cnt||'</td>
+    </tr>
+  </tbody>        
+</table>
+</br>
+Просьба закрыть все неиспользуемые запросы к ODS, иначе начнут падать процессы...
+');
+ 
+ 
+ 
+else
+ 
+send_email ('lryzhikova@.ru','lryzhikova@.ru',
+ 
+'Сессий > 5',
+'Сессий на ODS > 5.
+');
+ 
+END IF;
+ 
+END;
+ 
+END;
